@@ -9,4 +9,4 @@ Data Engineering bei Tag, zu viele Nebenprojekte bei Nacht.
 
 Monatlich neu gebaut aus der Commit-Historie aller eigenen Repositories.
 Private Projekte erscheinen unter Pseudonym; die Zahlen sind unverändert.
-[Interaktive Fassung →](https://stats.faffi.cloud)
+[Interaktive Fassung →](https://gh-stats.faffi.workers.dev)
