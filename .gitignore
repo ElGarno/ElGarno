@@ -1,0 +1,6 @@
+# Nichts hiervon gehört in ein öffentliches Repository: alle drei
+# enthalten die Klarnamen privater Repositories.
+repos/
+dashboard-data.json
+visibility.json
+commit-dashboard.html

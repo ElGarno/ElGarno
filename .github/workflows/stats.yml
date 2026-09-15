@@ -1,0 +1,59 @@
+name: Profil-Statistik
+
+on:
+  schedule:
+    - cron: "0 4 1 * *"   # am 1. jedes Monats, 04:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Der Spiegel wird zwischen den Läufen aufgehoben, sonst würden jedes Mal
+      # mehrere hundert MB neu übertragen.
+      - name: Repo-Spiegel aus dem Cache holen
+        uses: actions/cache@v4
+        with:
+          path: repos
+          key: gh-mirror-${{ github.run_id }}
+          restore-keys: gh-mirror-
+
+      # Ohne das schlagen Clones privater Repositories fehl: der Runner hat keinen
+      # Credential-Helper. insteadOf rewritet nur beim Transport — der Token landet
+      # dadurch nicht in remote.origin.url und damit auch nicht im Cache.
+      - name: Git-Zugang für private Repositories
+        env:
+          GH_TOKEN: ${{ secrets.STATS_TOKEN }}
+        run: |
+          git config --global \
+            url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf \
+            "https://github.com/"
+
+      - name: Statistik bauen
+        env:
+          # PAT mit repo-Scope, damit private Repositories mitgezählt werden.
+          GH_TOKEN: ${{ secrets.STATS_TOKEN }}
+          # Unterdrückt Repo-Namen im Log — Action-Logs sind hier öffentlich.
+          GH_STATS_QUIET: "1"
+        run: |
+          chmod +x refresh.sh
+          ./refresh.sh
+          python3 build_profile_svg.py dashboard-data.json .
+
+      - name: Banner committen, falls verändert
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add profile-banner-light.svg profile-banner-dark.svg
+          git diff --staged --quiet && echo "keine Änderung" && exit 0
+          git commit -m "chore: Profil-Statistik aktualisiert"
+          git push
