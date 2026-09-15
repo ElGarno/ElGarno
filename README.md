@@ -1,6 +1,6 @@
 ### Fabian Wörenkämper
 
-Data Engineering bei Tag, zu viele Nebenprojekte bei Nacht.
+Full Stack Data Science bei Tag, zu viele Nebenprojekte bei Nacht.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="profile-banner-dark.svg">
