@@ -9,7 +9,9 @@
 set -euo pipefail
 
 OWNER="${GH_STATS_OWNER:-ElGarno}"
-EXCLUDE="${GH_STATS_EXCLUDE:-^(obsidian)$}"   # repo names to skip entirely
+# Das Profil-Repo heisst wie der Account und enthaelt nur diese Auswertung —
+# es wuerde sich sonst selbst mitzaehlen.
+EXCLUDE="${GH_STATS_EXCLUDE:-^(obsidian|$OWNER)$}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPOS="$ROOT/repos"
 LIST="$(mktemp)"
@@ -54,7 +56,17 @@ if [ "$FETCH" -eq 1 ]; then
       fi
     fi
   done < "$LIST"
-  echo "  $upd aktualisiert, $new neu, $fail fehlgeschlagen — $(du -sh "$REPOS" | cut -f1) im Spiegel"
+  pruned=0
+  for dir in "$REPOS"/*.git; do
+    [ -d "$dir" ] || continue
+    base="$(basename "$dir" .git)"
+    if ! grep -qxF "$base" "$LIST"; then
+      rm -rf "$dir"
+      [ "$QUIET" = "1" ] || echo "  - aus dem Spiegel entfernt: $base"
+      pruned=$((pruned + 1))
+    fi
+  done
+  echo "  $upd aktualisiert, $new neu, $pruned entfernt, $fail fehlgeschlagen — $(du -sh "$REPOS" | cut -f1) im Spiegel"
 else
   echo "--no-fetch: überspringe GitHub, nutze $REPOS wie er ist"
 fi
