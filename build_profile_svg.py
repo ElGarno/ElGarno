@@ -40,8 +40,8 @@ for row in D["matrix"]:
         alias[row["repo"]] = "Projekt " + chr(65 + n); n += 1
 def label(r): return alias.get(r, r)
 
-W = 880
-PAD = 26
+W = 760      # Breite der README-Spalte auf GitHub: darueber wird skaliert,
+PAD = 24     # darunter bleibt Rand ungenutzt.
 ROWS = 10
 
 
@@ -58,16 +58,16 @@ def build(theme):
     y = PAD + 14
 
     # header
-    o.append(txt(PAD, y, "github · elgarno", 14, C["ink"], weight="600", ls="2.2"))
-    o.append(txt(W - PAD, y, f"Stand {T['last_commit']}", 10, C["dim"], anchor="end"))
-    y += 12
+    o.append(txt(PAD, y, "github · elgarno", 16, C["ink"], weight="600", ls="2.4"))
+    o.append(txt(W - PAD, y, f"Stand {T['last_commit']}", 11, C["dim"], anchor="end"))
+    y += 15
     o.append(txt(PAD, y, f"{de(T['commits_window'])} Commits in 24 Monaten · {T['repos_window']} Projekte",
-                 10.5, C["muted"]))
-    y += 14
+                 12, C["muted"]))
+    y += 16
     o.append(f'<line x1="{PAD}" y1="{y}" x2="{W-PAD}" y2="{y}" stroke="{C["line"]}" stroke-width="1"/>')
 
     # KPI row
-    y += 22
+    y += 24
     kpis = [("Commits", de(T["commits_window"]), ""),
             ("Mit Claude Code", f"{T['claude_session_window']/T['commits_window']*100:.0f}", "%"),
             ("Aufwand", de(T["hours_window"]), "h"),
@@ -75,14 +75,14 @@ def build(theme):
     cw = (W - 2 * PAD) / 4
     for i, (l, v, u) in enumerate(kpis):
         x = PAD + i * cw
-        o.append(txt(x, y, l.upper(), 8.5, C["dim"], ls="1.3"))
-        o.append(txt(x, y + 24, v, 26, C["ink"], weight="600"))
+        o.append(txt(x, y, l.upper(), 10, C["dim"], ls="1.4"))
+        o.append(txt(x, y + 29, v, 31, C["ink"], weight="600"))
         if u:
-            o.append(txt(x + len(v) * 15.6 + 5, y + 24, u, 11, C["muted"]))
-    y += 42
+            o.append(txt(x + len(v) * 18.6 + 6, y + 29, u, 13, C["muted"]))
+    y += 50
 
     # monthly commits
-    ch, pad_l = 116, 30
+    ch, pad_l = 132, 32
     iw = W - PAD * 2 - pad_l
     step = iw / len(MONTHS); bw = step * 0.62
     mx = 600.0
@@ -91,7 +91,7 @@ def build(theme):
         gy_y = base - (gy / mx) * ch
         o.append(f'<line x1="{PAD+pad_l}" y1="{gy_y:.1f}" x2="{W-PAD}" y2="{gy_y:.1f}" '
                  f'stroke="{C["line"]}" stroke-width="1"/>')
-        o.append(txt(PAD + pad_l - 6, gy_y + 3, str(gy), 8, C["dim"], anchor="end"))
+        o.append(txt(PAD + pad_l - 7, gy_y + 3.5, str(gy), 9.5, C["dim"], anchor="end"))
     for i in range(len(MONTHS)):
         tot = D["commits_total"][i]
         if not tot: continue
@@ -107,45 +107,45 @@ def build(theme):
                      f'height="{max(y_bot-gap-y_top,0.5):.1f}" fill="{col}" rx="1"/>')
             cum += val
     for i, l in enumerate(MLAB):
-        o.append(txt(PAD + pad_l + i * step + step / 2, base + 12, l, 7.5, C["dim"], anchor="middle"))
+        o.append(txt(PAD + pad_l + i * step + step / 2, base + 14, l, 9, C["dim"], anchor="middle"))
     seen = set()
     for i, m in enumerate(MONTHS):
         if m[:4] not in seen:
             seen.add(m[:4])
-            o.append(txt(PAD + pad_l + i * step + step / 2, base + 22, m[:4], 7.5, C["muted"],
+            o.append(txt(PAD + pad_l + i * step + step / 2, base + 26, m[:4], 9, C["muted"],
                          anchor="middle", ls="0.7"))
-    y = base + 34
+    y = base + 40
 
     # legend
     lx = PAD
     for col, lab in ((C["signed"], "Claude Code, signiert"), (C["session"], "gleiche Session"),
                      (C["manual"], "ohne Claude-Bezug")):
-        o.append(f'<rect x="{lx}" y="{y-7}" width="8" height="8" fill="{col}" rx="1.5"/>')
-        o.append(txt(lx + 12, y, lab, 9, C["muted"]))
-        lx += 13 + len(lab) * 5.4 + 20
-    y += 22
+        o.append(f'<rect x="{lx}" y="{y-8}" width="10" height="10" fill="{col}" rx="2"/>')
+        o.append(txt(lx + 15, y, lab, 11, C["muted"]))
+        lx += 16 + len(lab) * 6.6 + 18
+    y += 26
 
     # activity matrix
-    namew = 118
+    namew = 132
     R = D["matrix"][:ROWS]
-    cols = len(MONTHS); mcw = (W - PAD * 2 - namew) / cols; rh = 14
-    o.append(txt(PAD, y, "PROJEKT-AKTIVITÄT", 8.5, C["dim"], ls="1.3"))
-    y += 10
+    cols = len(MONTHS); mcw = (W - PAD * 2 - namew) / cols; rh = 17
+    o.append(txt(PAD, y, "PROJEKT-AKTIVITÄT", 10, C["dim"], ls="1.4"))
+    y += 13
     for r, row in enumerate(R):
         ry = y + r * rh
-        o.append(txt(PAD, ry + rh * 0.72, label(row["repo"])[:19], 8.5, C["ink"]))
+        o.append(txt(PAD, ry + rh * 0.72, label(row["repo"])[:19], 10.5, C["ink"]))
         for j, v in enumerate(row["v"]):
             k = 0 if v == 0 else 1 if v < 3 else 2 if v < 8 else 3 if v < 20 else 4 if v < 50 else 5 if v < 120 else 6
-            o.append(f'<rect x="{PAD+namew+j*mcw:.1f}" y="{ry:.1f}" width="{mcw-1.5:.1f}" '
-                     f'height="{rh-2.5}" fill="{C["ramp"][k]}" rx="1.5"/>')
-    y += rh * len(R) + 14
+            o.append(f'<rect x="{PAD+namew+j*mcw:.1f}" y="{ry:.1f}" width="{mcw-2:.1f}" '
+                     f'height="{rh-3}" fill="{C["ramp"][k]}" rx="1.5"/>')
+    y += rh * len(R) + 17
 
     o.append(f'<line x1="{PAD}" y1="{y}" x2="{W-PAD}" y2="{y}" stroke="{C["line"]}" stroke-width="1"/>')
-    y += 14
+    y += 17
     o.append(txt(PAD, y, "Private Repositories erscheinen als Projekt A, B, C — Zahlen sind echt.",
-                 8.5, C["dim"]))
+                 10, C["dim"]))
     o.append(txt(W - PAD, y, f"{de(T['hours_window'])} h geschätzt · {T['sessions_window']} Sessions",
-                 8.5, C["dim"], anchor="end"))
+                 10, C["dim"], anchor="end"))
     H = y + PAD - 6
 
     head = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H:.0f}" '
